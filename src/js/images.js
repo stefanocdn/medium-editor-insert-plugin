@@ -201,6 +201,7 @@
                 dataType: 'json',
                 add: function (e, data) {
                     $.proxy(that, 'uploadAdd', e, data)();
+                    $.blueimp.fileupload.prototype.options.add.call(this, e, data);
                 },
                 done: function (e, data) {
                     $.proxy(that, 'uploadDone', e, data)();
