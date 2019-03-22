@@ -201,7 +201,6 @@
                 dataType: 'json',
                 add: function (e, data) {
                     $.proxy(that, 'uploadAdd', e, data)();
-                    $.blueimp.fileupload.prototype.options.add.call(this, e, data);
                 },
                 done: function (e, data) {
                     $.proxy(that, 'uploadDone', e, data)();
@@ -296,7 +295,20 @@
                         });
                     };
                 } else {
-                    data.submit();
+                    if (this.options.fileUploadOptions.signatureScript) {
+                        this.requestSignedUrl()
+                            .done(function() {
+                                alert( "success" );
+                            })
+                            .fail(function() {
+                                alert( "error" );
+                            })
+                            .always(function() {
+                                alert( "complete" );
+                            });
+                    } else {
+                        data.submit();
+                    }
                 }
             });
         }
@@ -598,6 +610,28 @@
                     type: this.options.deleteMethod || 'POST',
                     data: { file: file }
                 }, this.options.fileDeleteOptions));
+            }
+        }
+    };
+    
+    /**
+     * Makes ajax call to signatureScript
+     *
+     * @returns Promise
+     */
+
+    Images.prototype.requestSignedUrl = function () {
+        // only take action if there is a truthy value
+        if (this.options.fileUploadOptions.signatureScript) {
+            // try to run it as a callback
+            if (typeof this.options.fileUploadOptions.signatureScript === 'function') {
+                this.options.fileUploadOptions.signatureScript(url);
+                // otherwise, it's probably a string, call it as ajax
+            } else {
+                return $.ajax($.extend(true, {}, {
+                    url: this.options.fileUploadOptions.signatureScript,
+                    type: this.options.fileUploadOptions.signatureMethod || 'POST',
+                }, this.options.fileUploadOptions.signatureOptions));
             }
         }
     };
